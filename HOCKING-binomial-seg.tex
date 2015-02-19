@@ -1,0 +1,88 @@
+\documentclass[12pt]{article}
+\usepackage{tikz}
+\usepackage[cm]{fullpage}
+\usepackage{verbatim}
+\usepackage{hyperref} 
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{amsmath,amssymb}
+\usepackage{dsfont}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\sign}{sign}
+\DeclareMathOperator*{\Lik}{Lik}
+\DeclareMathOperator*{\Peaks}{Peaks}
+\DeclareMathOperator*{\HotSpots}{HotSpots}
+\newcommand{\Cost}{\text{Cost}}
+\DeclareMathOperator*{\Diag}{Diag}
+\DeclareMathOperator*{\TPR}{TPR}
+\DeclareMathOperator*{\FPR}{FPR}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\minimize}{minimize}
+\newcommand{\ZZ}{\mathbb Z}
+\newcommand{\NN}{\mathbb N}
+\newcommand{\RR}{\mathbb R}
+
+\begin{document}
+
+\title{Constrained maximum likelihood binomial segmentation for
+  methylation count data}
+
+\author{Toby Dylan Hocking}
+
+\maketitle
+
+\section{Introduction/problem}
+
+Warren says that methylation sequencing data along the genome can be
+represented as a pair $(t_j, m_j)$ where $t_j\in\ZZ_+$ is the total
+number of reads at methylation site $j$ and $m_j\in\{0,1,\dots, t_j\}$
+is the number of methylated reads. The goal in analyzing these data is
+to classify the genome into hyper-methylated regions with high $m_j$
+values, and hypo-methylated regions with low $m_j$ values.
+
+\section{Binomial segmentation model}
+
+We propose the model $m_j \sim \text{Binomial}(t_j, p_j)$. The
+binomial distribution has the probability mass function
+\begin{equation}
+  \label{eq:binomial-prob}
+  \text{Prob}(m, p) = \binom{t}{m} p^m (1-p)^{t-m}
+\end{equation}
+which means the loss function for site $j$ is
+\begin{equation}
+  \label{eq:binomial-loss}
+  \ell_j(p) = (m_j - t_j) \log(1-p) - m_j\log p.
+\end{equation}
+
+\section{Pruned dynamic programming algorithm}
+
+To use the pDPA of \citet{pruned-dp} for the binomial distribution we
+need to be able to find the solution of
+\begin{equation}
+  \label{eq:pDPA-intervals}
+  a \log(1-p) + b \log p + c = d
+\end{equation}
+in terms of $p$, where $a,b$ are positive integers. Mathematica does
+not provide a closed form solution. It can be re-written as
+\begin{equation}
+  \label{eq:pDPA-interval-factorized}
+  e^{d-c} = (1-p)^a p^b,
+\end{equation}
+which can be further simplified (using the binomial theorem, since $a$
+is a positive integer) to
+\begin{equation}
+  \label{eq:pDPA-interval-polynomial}
+  e^{d-c} = \sum_{i=0}^a \binom{a}{i} (-1)^{a-i} p^{a-i+b},
+\end{equation}
+which makes it clear that the right side is a polynomial of degree
+$a+b$. By the Abel-Ruffini theorem \citep{Abel-Ruffini-wikipedia}, if
+the polynomial degree $a+b\geq 5$, then it is possible that there is
+no closed-form solution in terms of radicals. However we can always
+use an iterative root-finder such as Newton's method.
+
+\bibliographystyle{abbrvnat}
+
+\bibliography{refs}
+
+\end{document}
