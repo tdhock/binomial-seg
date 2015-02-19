@@ -55,6 +55,46 @@ which means the loss function for site $j$ is
   \ell_j(p) = (m_j - t_j) \log(1-p) - m_j\log p.
 \end{equation}
 
+\section{Standard dynamic programming algorithm}
+
+Let $(j', j]$ denote the interval of indices including $j'+1$ up to
+and including $j$. Let $t_{(j', j]} = \sum_{i=j'+1}^{j} t_i$ be the
+cumulative sum of total reads on that interval; idem for $m_{(j',
+  j]}$. The optimal probability of methylation on that segment is
+$p_{(j', j]} = m_{(j', j]}/t_{(j', j]}$, and the optimal loss of that
+segment is
+\begin{equation}
+  \label{eq:optimal-cost}
+  c_{(j', j]} = 
+  ( m_{(j', j]} - t_{(j', j]} )
+  \log\left\{ 
+    1 - p_{(j', j]}
+  \right\}
+  - m_{(j', j]}
+  \log p_{(j', j]}.
+\end{equation}
+
+Let $\mathcal L_{s,j}$ be the optimal loss in $s$ segments up to data
+point $j$. To compute $\mathcal L_{1, j}$ we first compute and store
+the $d$-vectors of cumulative sums $m_{(0, j]}$ and $t_{(0, j]}$, for
+all sites $j\in\{1, \dots, d\}$.
+
+The DPA computes the optimal loss for all segments $s\in\{2, \dots,
+s_{\text{max}} \}$ and for all sites $j\in\{1, \dots, d\}$ in
+$O(s_{\text{max}} d^2)$ time. This is accomplished using the
+recursion, for $s>1$,
+\begin{equation}
+  \label{eq:dpa-recursion}
+  \mathcal L_{s, j} = 
+  \min_{j' < j}
+  \mathcal L_{s-1, j'}
+  + 
+  c_{(j', j]}.
+\end{equation}
+Note that the optimal cost $c_{(j', j]}$ may be computed in constant
+$O(1)$ time given the $d$-vectors of cumulative sums $m_{(0, j]}$ and
+$t_{(0, j]}$.
+
 \section{Pruned dynamic programming algorithm}
 
 To use the pDPA of \citet{pruned-dp} for the binomial distribution we
