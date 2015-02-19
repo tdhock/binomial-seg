@@ -121,6 +121,16 @@ the polynomial degree $a+b\geq 5$, then it is possible that there is
 no closed-form solution in terms of radicals. However we can always
 use an iterative root-finder such as Newton's method.
 
+\includegraphics[width=\textwidth]{figure-binomial-loss}
+
+The figure above shows the binomial loss function $\ell_j(p)$ for
+$t_j\in\{10, 100\}$ (rows) and $m_j=\hat p t_j$ with $\hat p\in\{0.3,
+0.5\}$ (columns). It is clear that the loss is convex, so there is
+either 0, 1, or 2 intersection points with a constant function
+(colored horizontal line). Finding the intersection points is a key
+subroutine in the pDPA, and it seems that we will need to find the two
+intersection points using a root-finder.
+
 \bibliographystyle{abbrvnat}
 
 \bibliography{refs}

@@ -56,6 +56,6 @@ ggplot()+
   facet_grid(total.reads ~ estimated.probability,
              scales="free", labeller=label_both)
 
-pdf("figure-binomial-loss.pdf")
+pdf("figure-binomial-loss.pdf", h=4)
 print(bloss)
 dev.off()
