@@ -10,3 +10,5 @@ public.small.RData: public.small.R
 	R --no-save < $<
 figure-public-small.pdf: figure-public-small.R public.small.RData
 	R --no-save < $<
+ichange_classes.RData: ichange_classes.R ichange_classes.txt
+	R --no-save < $<
