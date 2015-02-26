@@ -6,3 +6,5 @@ HOCKING-binomial-seg.pdf: HOCKING-binomial-seg.tex refs.bib figure-binomial-loss
 	pdflatex HOCKING-binomial-seg
 figure-binomial-loss.pdf: figure-binomial-loss.R
 	R --no-save < $<
+public.small.RData: public.small.R
+	R --no-save < $<
