@@ -28,7 +28,6 @@ for(csv.i in seq_along(csv.bases)){
   cat(sprintf("%4d / %4d %s\n", csv.i, length(csv.bases), csv.base))
   ichange.class <- ichange_classes[[csv.base]]
   name <- sub("_.*", "", csv.base, perl=TRUE)
-  label <- paste0(ichange.class, "_", name)
 
   csv.file <- file.path("ichange_data", csv.base)
   one <- fread(csv.file)
@@ -36,15 +35,16 @@ for(csv.i in seq_along(csv.bases)){
   chroms <- paste0("chr", c(1:22, "X", "Y"))
   chroms <- "chr22"
   some <- one[chr %in% chroms, ]
+  some[, meth := total_meth]
   ## ignore strand-specific methylation for now.
   dir.create("ichange_chr22", showWarnings = FALSE)
-  for(out.col in c("total_meth", "total")){
-    suffix <- paste0(out.col, ".bedGraph.gz")
-    out.base <- sub("profile.*", suffix, csv.base)
+  for(out.col in c("meth", "total")){
+    pre <- paste(ichange.class, out.col, name, sep="_")
+    out.base <- paste0(pre, ".bedGraph.gz")
     out.file <- file.path("ichange_chr22", out.base)
     out.cols <- c("chr", "start", "end", out.col)
     out.dt <- some[, out.cols, with=FALSE]
-    header <- sprintf(header.tmp, label, label)
+    header <- sprintf(header.tmp, pre, out.file)
     con <- gzfile(out.file, "w")
     writeLines(header, con)
     write.table(out.dt, con, quote=FALSE, row.names=FALSE, col.names=FALSE)
