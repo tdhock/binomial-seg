@@ -38,14 +38,7 @@ ggplot()+
                     fill=annotation),
                 data=public.small$regions)
 
-model.list <- list()
-for(model.i in 1:nrow(end.mat)){
-  for(segment.i in 1:model.i){
-    model.list[[paste(model.i, segment.i)]] <-
-      data.table(model.i, segment.i)
-  }
-}
-
+percent.total <- 
 ggplot()+
   geom_tallrect(aes(xmin=chromStart/1e3, xmax=chromEnd/1e3,
                     fill=annotation),
@@ -63,6 +56,41 @@ ggplot()+
   theme(panel.margin=grid::unit(0, "cm"))+
   facet_grid(read.type ~ ., scales="free")
 
+pdf("figure-public-small-data.pdf")
+print(percent.total)
+dev.off()
+
+seg.list <- list()
+brk.list <- list()
+models <- 1:nrow(end.mat)
+models <- c(10, 15, 20)
+for(model.i in models){
+  ends <- end.mat[model.i, 1:model.i]
+  breaks <- ends[-length(ends)]
+  starts <- c(1, breaks+1)
+  for(segment.i in 1:model.i){
+    start <- starts[[segment.i]]
+    end <- ends[[segment.i]]
+    seg.data <- some.sites[start:end, ]
+    seg.prop <- with(seg.data, sum(methylated)/sum(total))
+    seg.list[[paste(model.i, segment.i)]] <-
+      data.table(model.i, segment.i, seg.prop,
+                 start,
+                 end,
+                 chromStart=seg.data$chromStart[1],
+                 chromEnd=seg.data$chromEnd[nrow(seg.data)])
+  }
+  if(length(breaks)){
+    brk.list[[paste(model.i)]] <-
+      data.table(model.i, break.is.before=breaks,
+                 chromStart=some.sites$chromEnd[breaks-1],
+                 chromEnd=some.sites$chromStart[breaks])
+  }
+}
+segs <- do.call(rbind, seg.list)
+brks <- do.call(rbind, brk.list)
+
+modelsPlot <- 
 ggplot()+
   geom_tallrect(aes(xmin=chromStart/1e3, xmax=chromEnd/1e3,
                     fill=annotation),
@@ -71,8 +99,23 @@ ggplot()+
                 alpha=0.5)+
   scale_x_continuous("position on chr1 (kilo bases = kb)")+
   ylab("")+
-  geom_point(aes(chromStart/1e3, count, group=read.type),
-             data=some.tall,
+  geom_point(aes(chromStart/1e3, percent.methylated),
+             data=some.sites,
+             color="grey50",
              pch=1)+
-  geom_line(aes(chromStart/1e3, count, group=read.type),
-            data=some.tall)
+  geom_line(aes(chromStart/1e3, percent.methylated),
+            color="grey50",
+            data=some.sites)+
+  geom_segment(aes(chromStart/1e3, seg.prop * 100,
+                   xend=chromEnd/1e3, yend=seg.prop * 100),
+               data=segs)+
+  geom_vline(aes(xintercept=(chromStart+chromEnd)/2/1e3),
+             data=brks, linetype="dashed")+
+  theme_bw()+
+  theme(panel.margin=grid::unit(0, "cm"))+
+  facet_grid(model.i ~ .)
+
+pdf("figure-public-small.pdf")
+print(modelsPlot)
+dev.off()
+

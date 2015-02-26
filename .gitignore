@@ -1,0 +1,13 @@
+*~
+.Rhistory
+*.log
+*.out
+*.blg
+*.bbl
+*.aux
+Rplots.pdf
+figure-*.pdf
+figure-*.png
+GSM*
+auto
+*.RData
