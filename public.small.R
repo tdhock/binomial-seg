@@ -44,7 +44,23 @@ with(bed, table(prop1000 - round(methylated/total*1000)))
 
 bed[, unmethylated := total - methylated]
 
+public.regions <- fread("public.regions.txt", sep=" ", header=FALSE)
+setnames(public.regions, c("position", "annotation"))
+position.pattern <-
+  paste0("(?<chrom>chr[^:]+)",
+         ":",
+         "(?<chromStart>[0-9]+)",
+         "-",
+         "(?<chromEnd>[0-9]+)")
+no.comma <- gsub(",", "", public.regions$position)
+position.mat <- str_match_perl(no.comma, position.pattern)
+public.regions$chrom <- position.mat[, "chrom"]
+public.regions$chromStart <- as.integer(position.mat[, "chromStart"])
+public.regions$chromEnd <- as.integer(position.mat[, "chromEnd"])
+
 public.small <-
-  bed[, .(chrom, chromStart, chromEnd, methylated, unmethylated, total)]
+  list(sites=bed[, .(chrom, chromStart, chromEnd,
+         methylated, unmethylated, total)],
+       regions=public.regions[, .(chrom, chromStart, chromEnd, annotation)])
 
 save(public.small, file="public.small.RData")
