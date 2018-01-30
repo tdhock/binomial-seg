@@ -131,6 +131,54 @@ either 0, 1, or 2 intersection points with a constant function
 subroutine in the pDPA, and it seems that we will need to find the two
 intersection points using a root-finder.
 
+\section{Root finder}
+
+From experience implementing a root finder for the Poisson loss, it
+will be advantageous (faster convergence) to do the root finding in
+another space, where the tails are linear.
+
+Let $u=\log p - \log(1-p) = \log(\frac{p}{1-p})\in\RR$ be that new
+variable, so $p=(1+e^{-u})^{-1}$. Thus
+\begin{eqnarray*}
+  \ell_j(p) 
+  &=& (m_j - t_j) \log(1-p) - m_j\log p \\
+  &=& (m_j - t_j) \log(1-\frac{1}{1+e^{-u}}) - m_j\log(\frac{1}{1+e^{-u}})\\
+g_j(u)  &=& (t_j - m_j) \log(e^u+1) + m_j\log(1+e^{-u}) \\
+\end{eqnarray*}
+The equation above can be used to update/add the cost of a new data
+point. We will thus need to store and find roots of functions such as
+the one below, 
+\begin{equation}
+  \label{eq:g(u)}
+  g(u)=a\log(1+e^u)+b\log(1+e^{-u})+c=d,
+\end{equation}
+where we will store the coefficients $a,b,c$ as double
+precision floating point numbers. The derivatives are
+\begin{equation}
+  \label{eq:g'(u)}
+  g'(u)=\frac{ae^u - b}{1+e^u} = \frac{a-be^{-u}}{e^{-u}+1}.
+\end{equation}
+The equations above make it clear that the asymptotes are linear. As
+$u\rightarrow\infty$, $g'(u)\rightarrow a$. As $u\rightarrow -\infty$,
+$g'(u)\rightarrow -b$. They also can be used to show that the minimum
+of the loss function occurs at $u=\log(b/a)$.  Depending on whether we
+are looking for the smaller or larger root, we can start the root
+finding on one side or the other of the minimum:
+$u_0 = \log(b/a)\pm 1$. Then the updates are for each iteration $i>0$,
+$u_i = u_{i-1} - g(u_{i-1})/g'(u_{i-1})$. We can stop the root when
+the cost is below some small absolute value, such as $10^{-12}$. For
+large data we should store the mean cost rather than the total cost,
+for numerical stability.
+
+The second derivative below is probably not used in
+the PDPA but since it is positive it is clear that the loss function
+is convex:
+\begin{equation}
+  \label{eq:g''(u)}
+  g''(u)=\frac{(a+b)e^u}{(1+e^u)^2} > 0.
+\end{equation}
+
+
 \section{Warren's public data set 26 Feb 2015}
 
 \includegraphics[width=\textwidth]{figure-public-small-data}
