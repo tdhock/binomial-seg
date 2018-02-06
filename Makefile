@@ -1,3 +1,9 @@
+HOCKING-constrained-binomial-seg.pdf: HOCKING-constrained-binomial-seg.tex refs.bib
+	rm -rf *.aux *.bbl
+	pdflatex HOCKING-constrained-binomial-seg
+	bibtex HOCKING-constrained-binomial-seg
+	pdflatex HOCKING-constrained-binomial-seg
+	pdflatex HOCKING-constrained-binomial-seg
 HOCKING-binomial-seg.pdf: HOCKING-binomial-seg.tex refs.bib figure-binomial-loss.pdf figure-public-small.pdf
 	rm -rf *.aux *.bbl
 	pdflatex HOCKING-binomial-seg
